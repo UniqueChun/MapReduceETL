@@ -1,0 +1,26 @@
+HDFS存放log路径 ：/g6/hadoop/accesslog/20190329
+MR计算输出路径 : hadoop fs -mkdir -p /g6/hadoop/access/output/day=20190329
+
+hadoop jar /home/hadoop/lib/hadoop-1.0.jar com.ruoze.hadoop.mapreduce.LogETLDriver /g6/hadoop/accesslog/20190329/ /g6/hadoop/access/output/day=20190329
+
+
+Hive 外表
+/g6/hadoop/access/clear
+
+create external table g6_access (
+cdn string,
+region string,
+level string,
+time string,
+ip string,
+domain string,
+url string,
+traffic bigint
+) partitioned by (day string)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
+LOCATION '/g6/hadoop/access/clear'
+
+hadoop fs -mv /g6/hadoop/access/output/day=20190329 /g6/hadoop/access/clear
+
+数据移动之后需要刷新元数据
+alter table g6_access add if not exists partition(day=20190329);
